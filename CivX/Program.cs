@@ -1,0 +1,140 @@
+﻿using System.Text.Json;
+
+/*
+    Every hour passed should be one year. 
+*/
+
+Console.Clear();
+
+string savesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Saves");
+Directory.CreateDirectory(savesDirectory);
+
+var saveFiles = Directory.GetFiles(savesDirectory, "*.json");
+SaveData? currentSave = null;
+string worldName = "";
+
+if (saveFiles.Length == 0)
+{
+    Console.WriteLine("No save files found.");
+    currentSave = CreateNewWorld();
+}
+else
+{
+    Console.WriteLine("Please choose a save file to load, or create a new one:");
+    for (int i = 0; i < saveFiles.Length; i++)
+    {
+        Console.WriteLine($"[{i + 1}] {Path.GetFileName(saveFiles[i])}");
+    }
+    Console.WriteLine("[n] Create a New World");
+
+    while (currentSave == null)
+    {
+        Console.Write("Your choice: ");
+        string? choice = Console.ReadLine();
+
+        if (choice?.ToLower() == "n")
+        {
+            currentSave = CreateNewWorld();
+        }
+        else if (int.TryParse(choice, out int fileIndex) && fileIndex > 0 && fileIndex <= saveFiles.Length)
+        {
+            string selectedFile = saveFiles[fileIndex - 1];
+            worldName = selectedFile;
+            Console.WriteLine($"\nLoading save: {Path.GetFileName(selectedFile)}");
+            currentSave = LoadWorld(selectedFile);
+        }
+        else
+        {
+            Console.WriteLine("Invalid choice. Please try again.");
+        }
+    }
+}
+
+if (currentSave == null)
+{
+    Console.WriteLine("Error loading save. Exiting...");
+    Environment.Exit(0);
+}
+
+Console.WriteLine($"\nSave loaded. Game was last saved at: {currentSave.SaveTime}. ");
+Console.WriteLine("Humans in this world:");
+foreach (var human in currentSave.Humans)
+{
+    Console.WriteLine($"- {human.Name}, Age: {human.Age}");
+}
+
+//Gameplay loop
+bool firstRun = true;
+while (true)
+{
+    if (firstRun) Console.WriteLine("Welcome to CivX\n\n");
+    Console.WriteLine("What would you like to do? (Hit i to view commands)\n");
+    string? command = Console.ReadLine();
+
+    switch (command?.ToLower())
+    {
+        case "i":
+            Console.WriteLine("\nAvailable Commands:");
+            Console.WriteLine("  i - View commands");
+            Console.WriteLine("  s - Save");
+            Console.WriteLine("  q - Quit");
+            break;
+        case "s":
+            Console.WriteLine("Saving...");
+            SaveGame(currentSave, worldName);
+            Console.WriteLine("Saved.");
+            break;
+        case "q":
+            Console.WriteLine("Exiting CivX. Goodbye!");
+            return;
+        default:
+            Console.WriteLine("Unknown command. Hit 'i' to view all commands.");
+            break;
+    }
+}
+
+SaveData CreateNewWorld()
+{
+    Console.Write("Enter a name for your new world: ");
+    string? newSaveName = Console.ReadLine();
+
+    while (string.IsNullOrWhiteSpace(newSaveName))
+    {
+        Console.Write("Save name cannot be empty. Please enter a name: ");
+        newSaveName = Console.ReadLine();
+    }
+
+    if (!newSaveName.EndsWith(".json"))
+    {
+        newSaveName += ".json";
+    }
+
+    List<Human> initialHumans = new List<Human>
+    {
+        new Human { Name = "Adam", Age = 30 },
+        new Human { Name = "Eve", Age = 30 }
+    };
+
+    var newSave = new SaveData
+    {
+        Humans = initialHumans,
+    };
+
+    SaveGame(newSave, newSaveName);
+    Console.WriteLine($"New world saved as {newSaveName}");
+    return newSave;
+}
+
+void SaveGame(SaveData data, string fileName)
+{
+    data.SaveTime = DateTime.Now;
+    string filePath = Path.Combine(savesDirectory, fileName);
+    string jsonString = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+    File.WriteAllText(filePath, jsonString);
+}
+
+SaveData? LoadWorld(string filePath)
+{
+    string jsonString = File.ReadAllText(filePath);
+    return JsonSerializer.Deserialize<SaveData>(jsonString);
+}

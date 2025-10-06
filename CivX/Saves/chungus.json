@@ -1,0 +1,25 @@
+{
+  "Humans": [
+    {
+      "Name": "Adam",
+      "Age": 30,
+      "Parents": null,
+      "Job": null,
+      "State": null,
+      "Country": null,
+      "Children": null,
+      "Balance": 0
+    },
+    {
+      "Name": "Eve",
+      "Age": 30,
+      "Parents": null,
+      "Job": null,
+      "State": null,
+      "Country": null,
+      "Children": null,
+      "Balance": 0
+    }
+  ],
+  "SaveTime": "2025-10-05T20:33:14.772309-05:00"
+}
