@@ -3,6 +3,7 @@ using System.Text.Json;
 
 /*
     Every hour passed should be one year. 
+    Have settings in savedata. Stuff like can time pass when inacative etc. 
 */
 
 Console.Clear();
@@ -24,7 +25,12 @@ else
     Console.WriteLine("Please choose a save file to load, or create a new one:");
     for (int i = 0; i < saveFiles.Length; i++)
     {
-        Console.WriteLine($"[{i + 1}] {Path.GetFileName(saveFiles[i])}");
+        var saveData = LoadWorld(saveFiles[i]);
+        if (saveData != null)
+        {
+            string displayName = Path.GetFileNameWithoutExtension(saveFiles[i]);
+            Console.WriteLine($"[{i + 1}] {displayName} - Year: {saveData.CurrentYear}, Last Saved: {saveData.SaveTime}");
+        }
     }
     Console.WriteLine("[n] Create a New World");
 
@@ -143,6 +149,8 @@ SaveData CreateNewWorld()
     {
         newSaveName += ".json";
     }
+
+    worldName = newSaveName; 
 
     List<Human> initialHumans = new List<Human>
     {
