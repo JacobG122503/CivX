@@ -2,8 +2,13 @@
 using System.Text.Json;
 
 /*
-    Every hour passed should be one year. 
-    Have settings in savedata. Stuff like can time pass when inacative etc. 
+    TODO-
+    Set up marrying.
+    Set up kids. 
+    Set up hour passed. 
+    Set up savable settings.
+    Set up jobs.
+    Set up income.
 */
 
 Console.Clear();
@@ -152,13 +157,10 @@ SaveData CreateNewWorld()
 
     currentSaveFilePath = Path.Combine(savesDirectory, newSaveName);
 
-    var nameGenerator = new NameGenerator();
-
     var initialHumans = new List<Human>();
     for (int i = 0; i < 10; i++)
     {
-        var (firstName, lastName) = nameGenerator.GenerateRandomName();
-        initialHumans.Add(new Human { FirstName = firstName, LastName = lastName, Age = 30 });
+        initialHumans.Add(new Human { Age = 18 });
     }
 
     var newSave = new SaveData

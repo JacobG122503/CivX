@@ -3,6 +3,7 @@ public class Human
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public string FullName => $"{FirstName} {LastName}";
+    public string? Gender { get; set; }
     public int Age { get; set; }
     public int BirthYear { get; set; } = DateTime.Now.Year;
     public int DeathYear { get; set; }
@@ -13,6 +14,13 @@ public class Human
     public string? Country { get; set; }
     public Human[]? Children { get; set; }
     public int Balance { get; set; }
+
+    public Human()
+    {
+        Gender = Random.Shared.Next(0, 2) == 0 ? "Male" : "Female";
+        FirstName = NameGenerator.GenerateFirstName(Gender);
+        LastName = NameGenerator.GenerateLastName();
+    }
 
     public void AgeUp(int currentYear)
     {
