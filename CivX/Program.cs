@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Runtime.InteropServices;
+using System.Text.Json;
 
 /*
     Every hour passed should be one year. 
@@ -67,17 +68,38 @@ foreach (var human in currentSave.Humans)
 bool firstRun = true;
 while (true)
 {
+    Console.Clear();
     if (firstRun) Console.WriteLine("Welcome to CivX\n\n");
+    Console.WriteLine($"Year: {currentSave.CurrentYear}");
+    Console.WriteLine($"Humans: {currentSave.Humans.Count(h => h.IsAlive)}, Deaths: {currentSave.Humans.Count(h => !h.IsAlive)}");
     Console.WriteLine("What would you like to do? (Hit i to view commands)\n");
     string? command = Console.ReadLine();
 
-    switch (command?.ToLower())
+    switch (command)
     {
         case "i":
             Console.WriteLine("\nAvailable Commands:");
-            Console.WriteLine("  i - View commands");
-            Console.WriteLine("  s - Save");
-            Console.WriteLine("  q - Quit");
+            Console.WriteLine(" i - View commands");
+            Console.WriteLine(" y - Move forward time one year");
+            Console.WriteLine(" Y - Move forward x amount of time");
+            Console.WriteLine(" s - Save");
+            Console.WriteLine(" q - Quit");
+            break;
+        case "y":
+            PassTime(1);
+            Console.WriteLine("A year has passed.");
+            break;
+        case "Y":
+            Console.Write("How many years do you want to pass?\n");
+            if (int.TryParse(Console.ReadLine(), out int yearsToPass) && yearsToPass > 0)
+            {
+                PassTime(yearsToPass);
+                Console.WriteLine($"{yearsToPass} years have passed.");
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter a positive number.");
+            }
             break;
         case "s":
             Console.WriteLine("Saving...");
@@ -90,6 +112,19 @@ while (true)
         default:
             Console.WriteLine("Unknown command. Hit 'i' to view all commands.");
             break;
+    }
+    Thread.Sleep(750);
+}
+
+void PassTime(int years)
+{
+    for (var i = 0; i < years; i++)
+    {
+        currentSave.CurrentYear++;
+        foreach (var human in currentSave.Humans)
+        {
+            human.AgeUp(currentSave.CurrentYear);
+        }
     }
 }
 

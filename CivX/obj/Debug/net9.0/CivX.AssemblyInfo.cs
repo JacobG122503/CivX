@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CivX")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a485ade883544dffe08dbd0571e438507f071138")]
 [assembly: System.Reflection.AssemblyProductAttribute("CivX")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CivX")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

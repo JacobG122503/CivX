@@ -2,7 +2,10 @@
   "Humans": [
     {
       "Name": "Adam",
-      "Age": 30,
+      "Age": 43,
+      "BirthYear": 2025,
+      "DeathYear": 2037,
+      "IsAlive": false,
       "Parents": null,
       "Job": null,
       "State": null,
@@ -12,7 +15,10 @@
     },
     {
       "Name": "Eve",
-      "Age": 30,
+      "Age": 47,
+      "BirthYear": 2025,
+      "DeathYear": 0,
+      "IsAlive": true,
       "Parents": null,
       "Job": null,
       "State": null,
@@ -21,5 +27,6 @@
       "Balance": 0
     }
   ],
-  "SaveTime": "2025-10-05T20:33:14.772309-05:00"
+  "SaveTime": "2025-10-05T20:57:59.158745-05:00",
+  "CurrentYear": 2042
 }
