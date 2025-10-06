@@ -13,7 +13,7 @@ Directory.CreateDirectory(savesDirectory);
 
 var saveFiles = Directory.GetFiles(savesDirectory, "*.json");
 SaveData? currentSave = null;
-string worldName = "";
+string currentSaveFilePath = "";
 
 if (saveFiles.Length == 0)
 {
@@ -46,7 +46,7 @@ else
         else if (int.TryParse(choice, out int fileIndex) && fileIndex > 0 && fileIndex <= saveFiles.Length)
         {
             string selectedFile = saveFiles[fileIndex - 1];
-            worldName = selectedFile;
+            currentSaveFilePath = selectedFile;
             Console.WriteLine($"\nLoading save: {Path.GetFileName(selectedFile)}");
             currentSave = LoadWorld(selectedFile);
         }
@@ -67,7 +67,7 @@ Console.WriteLine($"\nSave loaded. Game was last saved at: {currentSave.SaveTime
 Console.WriteLine("Humans in this world:");
 foreach (var human in currentSave.Humans)
 {
-    Console.WriteLine($"- {human.Name}, Age: {human.Age}");
+    Console.WriteLine($"- {human.FullName}, Age: {human.Age}");
 }
 
 //Gameplay loop
@@ -109,7 +109,7 @@ while (true)
             break;
         case "s":
             Console.WriteLine("Saving...");
-            SaveGame(currentSave, worldName);
+            SaveGame(currentSave, currentSaveFilePath);
             Console.WriteLine("Saved.");
             break;
         case "q":
@@ -150,28 +150,32 @@ SaveData CreateNewWorld()
         newSaveName += ".json";
     }
 
-    worldName = newSaveName; 
+    currentSaveFilePath = Path.Combine(savesDirectory, newSaveName);
 
-    List<Human> initialHumans = new List<Human>
+    var nameGenerator = new NameGenerator();
+
+    var initialHumans = new List<Human>();
+    for (int i = 0; i < 10; i++)
     {
-        new Human { Name = "Adam", Age = 30 },
-        new Human { Name = "Eve", Age = 30 }
-    };
+        var (firstName, lastName) = nameGenerator.GenerateRandomName();
+        initialHumans.Add(new Human { FirstName = firstName, LastName = lastName, Age = 30 });
+    }
 
     var newSave = new SaveData
     {
         Humans = initialHumans,
+        CurrentYear = DateTime.Now.Year,
+        SaveTime = DateTime.Now
     };
 
-    SaveGame(newSave, newSaveName);
+    SaveGame(newSave, currentSaveFilePath);
     Console.WriteLine($"New world saved as {newSaveName}");
     return newSave;
 }
 
-void SaveGame(SaveData data, string fileName)
+void SaveGame(SaveData data, string filePath)
 {
     data.SaveTime = DateTime.Now;
-    string filePath = Path.Combine(savesDirectory, fileName);
     string jsonString = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
     File.WriteAllText(filePath, jsonString);
 }

@@ -1,6 +1,8 @@
 public class Human
 {
-    public string? Name { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string FullName => $"{FirstName} {LastName}";
     public int Age { get; set; }
     public int BirthYear { get; set; } = DateTime.Now.Year;
     public int DeathYear { get; set; }
