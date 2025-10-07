@@ -13,6 +13,10 @@ using System.Text.Json.Serialization;
     Set up income.
 */
 
+//Change these to tweak world
+const int CHANCE_OF_MEETING = 20;
+const int WANT_BABY_DIFF = 35;
+
 Console.Clear();
 
 string savesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Saves");
@@ -134,31 +138,59 @@ void PassTime(int years)
     for (var i = 0; i < years; i++)
     {
         currentSave.CurrentYear++;
+        var newBabys = new List<Human>();
+
         foreach (var human in currentSave.Humans)
         {
             if (!human.IsAlive) continue;
             human.AgeUp(currentSave.CurrentYear);
             //If human meets another. Get married if they are attractive.
-            if (human.Spouse == null)
+            if (human.Spouse == null && human.Age >= 18)
             {
                 var chance = Random.Shared.Next(0, 101);
                 //20 percent chance they meet another human this year.
-                if (chance <= 20)
+                if (chance <= CHANCE_OF_MEETING)
                 {
-                    var potentialSpouse = currentSave.Humans[Random.Shared.Next(0, currentSave.Humans.Count)];
-                    if (potentialSpouse.LastName == human.LastName) continue;
-                    if (human.Stats.Attractiveness >= potentialSpouse.Stats.Attractiveness && potentialSpouse.Spouse == null)
+                    //Might want to remove continue idk
+                    var eligibleSpouses = currentSave.Humans.Where(h => h.IsAlive && h != human && h.Spouse == null).ToList();
+                    if (eligibleSpouses.Count == 0) continue;
+
+                    var potentialSpouse = eligibleSpouses[Random.Shared.Next(0, eligibleSpouses.Count)];
+                    
+                    if (potentialSpouse.LastName == human.LastName || potentialSpouse.Age < 18) continue;
+                    if (human.Stats.Attractiveness >= potentialSpouse.Stats.Attractiveness)
                     {
                         human.Spouse = potentialSpouse;
                         potentialSpouse.Spouse = human;
+                        if (human.Gender == "Male") human.Spouse.LastName = human.LastName;
+                        else human.LastName = human.Spouse.LastName;
                     }
                 }
             }
-            else
+            else if (human.Spouse != null && human.Age >= 18 && human.Spouse.IsAlive)
             {
                 //If already married. Maybe have kids.
+                //If they BabyFever stat has a difference of WANT_BABY_DIFF or above, they choose never to have kids.
+                //Then if they want kids, both the spouse and human must succeed in a roll to have kids.
+                //If success, minus 20 from BabyFever for both.
+                if (Math.Abs(human.Stats.BabyFever - human.Spouse.Stats.BabyFever) >= WANT_BABY_DIFF) continue;
+                if (Random.Shared.Next(0, 101) >= human.Stats.BabyFever && Random.Shared.Next(0, 101) >= human.Spouse.Stats.BabyFever)
+                {
+                    human.Stats.BabyFever -= 20;
+                    human.Spouse.Stats.BabyFever -= 20;
+                    //Birth kid.
+                    var baby = new Human();
+                    baby.LastName = human.LastName;
+                    human.Children.Add(baby);
+                    human.Spouse.Children.Add(baby);
+                    baby.Parents.Add(human);
+                    baby.Parents.Add(human.Spouse);
+                    baby.BirthYear = currentSave.CurrentYear;
+                    newBabys.Add(baby);
+                }
             }
         }
+        currentSave.Humans.AddRange(newBabys);
     }
 }
 
@@ -180,10 +212,11 @@ SaveData CreateNewWorld()
 
     currentSaveFilePath = Path.Combine(savesDirectory, newSaveName);
 
+    //Temp add random humans
     var initialHumans = new List<Human>();
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 100; i++)
     {
-        initialHumans.Add(new Human { Age = 18 });
+        initialHumans.Add(new Human { Age = 18, BirthYear = DateTime.Now.Year });
     }
 
     var newSave = new SaveData
@@ -204,8 +237,7 @@ void SaveGame(SaveData data, string filePath)
     var options = new JsonSerializerOptions
     {
         ReferenceHandler = ReferenceHandler.Preserve,
-        
-        WriteIndented = true 
+        WriteIndented = true,
     };
     string jsonString = JsonSerializer.Serialize(data, options);
     File.WriteAllText(filePath, jsonString);
@@ -216,7 +248,7 @@ SaveData? LoadWorld(string filePath)
     string jsonString = File.ReadAllText(filePath);
     var options = new JsonSerializerOptions
     {
-        ReferenceHandler = ReferenceHandler.Preserve
+        ReferenceHandler = ReferenceHandler.Preserve,
     };
     return JsonSerializer.Deserialize<SaveData>(jsonString, options);
 }
