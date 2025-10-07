@@ -1,10 +1,12 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 /*
     TODO-
     Set up marrying.
     Set up kids. 
+    Add logging
     Set up hour passed. 
     Set up savable settings.
     Set up jobs.
@@ -134,7 +136,28 @@ void PassTime(int years)
         currentSave.CurrentYear++;
         foreach (var human in currentSave.Humans)
         {
+            if (!human.IsAlive) continue;
             human.AgeUp(currentSave.CurrentYear);
+            //If human meets another. Get married if they are attractive.
+            if (human.Spouse == null)
+            {
+                var chance = Random.Shared.Next(0, 101);
+                //20 percent chance they meet another human this year.
+                if (chance <= 20)
+                {
+                    var potentialSpouse = currentSave.Humans[Random.Shared.Next(0, currentSave.Humans.Count)];
+                    if (potentialSpouse.LastName == human.LastName) continue;
+                    if (human.Stats.Attractiveness >= potentialSpouse.Stats.Attractiveness && potentialSpouse.Spouse == null)
+                    {
+                        human.Spouse = potentialSpouse;
+                        potentialSpouse.Spouse = human;
+                    }
+                }
+            }
+            else
+            {
+                //If already married. Maybe have kids.
+            }
         }
     }
 }
@@ -178,12 +201,22 @@ SaveData CreateNewWorld()
 void SaveGame(SaveData data, string filePath)
 {
     data.SaveTime = DateTime.Now;
-    string jsonString = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+    var options = new JsonSerializerOptions
+    {
+        ReferenceHandler = ReferenceHandler.Preserve,
+        
+        WriteIndented = true 
+    };
+    string jsonString = JsonSerializer.Serialize(data, options);
     File.WriteAllText(filePath, jsonString);
 }
 
 SaveData? LoadWorld(string filePath)
 {
     string jsonString = File.ReadAllText(filePath);
-    return JsonSerializer.Deserialize<SaveData>(jsonString);
+    var options = new JsonSerializerOptions
+    {
+        ReferenceHandler = ReferenceHandler.Preserve
+    };
+    return JsonSerializer.Deserialize<SaveData>(jsonString, options);
 }
