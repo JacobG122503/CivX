@@ -44,6 +44,7 @@ else
         }
     }
     Console.WriteLine("[n] Create a New World");
+    Console.WriteLine("[d] Delete All Saves");
 
     while (currentSave == null)
     {
@@ -53,6 +54,24 @@ else
         if (choice?.ToLower() == "n")
         {
             currentSave = CreateNewWorld();
+        }
+        else if (choice?.ToLower() == "d")
+        {
+            Console.Write("Are you sure you want to delete all saves? (y/n): ");
+            string? confirmChoice = Console.ReadLine();
+            if (confirmChoice?.ToLower() == "y")
+            {
+                foreach (var file in saveFiles)
+                {
+                    File.Delete(file);
+                }
+                Console.WriteLine("All save files have been deleted.");
+                currentSave = CreateNewWorld();
+            }
+            else
+            {
+                Console.WriteLine("Deletion cancelled.");
+            }
         }
         else if (int.TryParse(choice, out int fileIndex) && fileIndex > 0 && fileIndex <= saveFiles.Length)
         {
@@ -156,7 +175,7 @@ void PassTime(int years)
                     if (eligibleSpouses.Count == 0) continue;
 
                     var potentialSpouse = eligibleSpouses[Random.Shared.Next(0, eligibleSpouses.Count)];
-                    
+
                     if (potentialSpouse.LastName == human.LastName || potentialSpouse.Age < 18) continue;
                     if (human.Stats.Attractiveness >= potentialSpouse.Stats.Attractiveness)
                     {
