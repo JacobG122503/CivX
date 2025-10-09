@@ -1,11 +1,12 @@
 ﻿using System.Runtime.InteropServices;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 /*
     TODO-
     Set up marrying.
     Set up kids. 
+    Fix saving
+    Fix slowness
     Add logging
     Set up hour passed. 
     Set up savable settings.
@@ -233,7 +234,7 @@ SaveData CreateNewWorld()
 
     //Temp add random humans
     var initialHumans = new List<Human>();
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 2; i++)
     {
         initialHumans.Add(new Human { Age = 18, BirthYear = DateTime.Now.Year });
     }
@@ -253,21 +254,22 @@ SaveData CreateNewWorld()
 void SaveGame(SaveData data, string filePath)
 {
     data.SaveTime = DateTime.Now;
-    var options = new JsonSerializerOptions
+    var settings = new JsonSerializerSettings
     {
-        ReferenceHandler = ReferenceHandler.Preserve,
-        WriteIndented = true,
+        PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+        Formatting = Formatting.Indented
     };
-    string jsonString = JsonSerializer.Serialize(data, options);
+    string jsonString = JsonConvert.SerializeObject(data, settings);
     File.WriteAllText(filePath, jsonString);
 }
 
 SaveData? LoadWorld(string filePath)
 {
     string jsonString = File.ReadAllText(filePath);
-    var options = new JsonSerializerOptions
+    var settings = new JsonSerializerSettings
     {
-        ReferenceHandler = ReferenceHandler.Preserve,
+        PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+        MaxDepth = null
     };
-    return JsonSerializer.Deserialize<SaveData>(jsonString, options);
+    return JsonConvert.DeserializeObject<SaveData>(jsonString, settings);
 }
